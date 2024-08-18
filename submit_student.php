@@ -1,7 +1,7 @@
 <?php
 $servername = "localhost";
-$username = "root"; // Replace with your MySQL username
-$password = ""; // Replace with your MySQL password
+$username = "niniodatabase"; // Replace with your MySQL username
+$password = "Mjrkmb2131$"; // Replace with your MySQL password
 $dbname = "students_db";
 
 // Create connection
@@ -13,6 +13,17 @@ if ($conn->connect_error) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Prepare and bind
+    $stmt = $conn->prepare("INSERT INTO students (first_name, last_name, email, phone, address, age, birthdate, course, country, zipcode)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    
+    if ($stmt === FALSE) {
+        die("Error preparing statement: " . $conn->error);
+    }
+
+    $stmt->bind_param("ssssisssss", $first_name, $last_name, $email, $phone, $address, $age, $birthdate, $course, $country, $zipcode);
+
+    // Set parameters and execute
     $first_name = $_POST['first_name'];
     $last_name = $_POST['last_name'];
     $email = $_POST['email'];
@@ -24,17 +35,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $country = $_POST['country'];
     $zipcode = $_POST['zipcode'];
 
-    $sql = "INSERT INTO students (first_name, last_name, email, phone, address, age, birthdate, course, country, zipcode)
-            VALUES ('$first_name', '$last_name', '$email', '$phone', '$address', '$age', '$birthdate', '$course', '$country', '$zipcode')";
-
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute()) {
         // Redirect to the success page
         header("Location: success.html");
         exit();
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        echo "Error: " . $stmt->error;
     }
 
-    $conn->close();
+    $stmt->close();
 }
+
+$conn->close();
 ?>
